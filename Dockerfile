@@ -1,17 +1,19 @@
-FROM python:3.11-slim
+
+FROM python:3.10-slim
 
 RUN apt-get update && apt-get install -y \
-    chromium chromium-driver \
-    curl gnupg2 unzip && \
-    apt-get clean
+    chromium \
+    chromium-driver \
+    fonts-liberation libappindicator3-1 libasound2 libnspr4 libnss3 libxss1 libxtst6 \
+    wget gnupg unzip curl \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV CHROME_BIN=/usr/bin/chromium
+ENV PATH="$CHROME_BIN:$PATH"
 
 WORKDIR /app
-
 COPY . .
 
-RUN pip install --no-cache-dir flask selenium requests beautifulsoup4
+RUN pip install --no-cache-dir -r requirements.txt
 
-ENV TELEGRAM_BOT_TOKEN=changeme
-ENV TELEGRAM_CHAT_ID=changeme
-
-CMD ["python", "main.py"]
+CMD ["bash", "start.sh"]
