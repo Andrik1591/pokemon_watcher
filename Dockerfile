@@ -22,4 +22,4 @@ COPY setup_chromedriver.sh /setup_chromedriver.sh
 # Führe das Setup-Skript aus
 RUN /bin/bash /setup_chromedriver.sh
 
-CMD ["bash", "start.sh"]
+CMD ["python", "main.py"]
