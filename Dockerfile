@@ -1,23 +1,17 @@
-# Dockerfile
 FROM python:3.11-slim
 
-# Installiere Abhängigkeiten
 RUN apt-get update && apt-get install -y \
-    wget curl unzip gnupg2 \
-    chromium-driver chromium
+    chromium chromium-driver \
+    curl gnupg2 unzip && \
+    apt-get clean
 
-# Setze Arbeitsverzeichnis
 WORKDIR /app
 
-# Kopiere lokale Dateien ins Container-Verzeichnis
-COPY . /app
+COPY . .
 
-# Installiere Python-Abhängigkeiten
-RUN pip install flask selenium requests beautifulsoup4
+RUN pip install --no-cache-dir flask selenium requests beautifulsoup4
 
-# Setze Umgebungsvariablen (zur Sicherheit besser über .env oder docker run -e)
-ENV TELEGRAM_BOT_TOKEN=dein_token
-ENV TELEGRAM_CHAT_ID=deine_chat_id
+ENV TELEGRAM_BOT_TOKEN=changeme
+ENV TELEGRAM_CHAT_ID=changeme
 
-# Starte das Skript
 CMD ["python", "main.py"]
