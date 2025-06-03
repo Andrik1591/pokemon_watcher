@@ -22,8 +22,30 @@ TELEGRAM_API_URL = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
 # Produkt-URLs
 PRODUCT_URLS = [
     "https://www.mueller.de/p/pokemon-sammelkartenspiel-super-premium-kollektion-karmesin-purpur-prismatische-entwicklungen-PPN3101975/?itemId=3101975",
-    ...
-    "https://www.pokemoncenter.com/product/10-10027-101/pokemon-tcg-scarlet-and-violet-prismatic-evolutions-super-premium-collection"
+    "https://www.mueller.de/p/pokemon-sammelkartenspiel-top-trainer-box-karmesin-purpur-prismatische-entwicklungen-IPN3074733/",
+    "https://www.mueller.de/p/pokemon-sammelkartenspiel-spezial-kollektion-karmesin-purpur-prismatische-entwicklungen-zubehoer-beutel-PPN3098433/",
+    "https://www.smythstoys.com/de/de-de/spielzeug/action-spielzeug/pokemon/pokemon-karten-karmesin-und-purpur-prismatische-entwicklungen-super-premium-kollektion/p/250525",
+    "https://www.smythstoys.com/de/de-de/spielzeug/action-spielzeug/pokemon/pokemon-karten-karmesin-und-purpur-prismatische-entwicklungen-top-trainer-box/p/245332",
+    "https://www.smythstoys.com/de/de-de/spielzeug/action-spielzeug/pokemon/pokemon-karten-karmesin-und-purpur-prismatische-entwicklungen-ueberraschungsbox/p/246195",
+    "https://www.smythstoys.com/de/de-de/spielzeug/action-spielzeug/pokemon/pokemon-karten/pokemon-karten-karmesin-und-purpur-ewige-rivalen-top-trainer-box/p/250642",
+    "https://www.smythstoys.com/de/de-de/spielzeug/action-spielzeug/pokemon/pokemon-karten/pokemon-karmesin-und-purpur-ewige-rivalen-team-rockets-mewtu-ex-kollektion/p/250643",
+    "https://www.smythstoys.com/de/de-de/spielzeug/action-spielzeug/pokemon/pokemon-karten/pokemon-karten-karmesin-und-purpur-ewige-rivalen-3er-set-blister-sortiert/p/250623",
+    "https://www.mediamarkt.de/de/product/_the-pokemon-company-int-45562-pokemon-kp035-booster-bundle-sammelkarten-2885370.html",
+    #"https://www.mediamarkt.de/de/product/_the-pokemon-company-int-10617-pokemon-kp085-boosterbundle-sammelkarten-2973282.html",
+    "https://www.mediamarkt.de/de/product/_the-pokemon-company-int-10598-pokemon-uberraschungsbox-fix6-karmesin-and-purpur-prismatische-entwicklungen-sammelkarten-2972604.html",
+    "https://www.mediamarkt.de/de/product/_the-pokemon-company-int-11088-kp10-top-trainer-box-de-mbe4-sammelkarten-2988488.html",
+    "https://www.mediamarkt.de/de/product/_pokemon-41094-team-rockets-mewtu-ex-kollekt-mbe6-sammelkarten-2988492.html",
+    "https://www.mediamarkt.de/de/product/_pokemon-11369-pkm-kp105-top-trainer-box-z-sammelkartenspiel-2992653.html",
+    "https://www.mediamarkt.de/de/product/_pokemon-11364-pkm-kp105-top-trainer-box-weiss-sammelkartenspiel-2992652.html",
+    "https://www.mediamarkt.de/de/product/_pokemon-11401-pkm-kp105-poster-kollektion-sammelkartenspiel-2992656.html",
+    "https://www.pokemoncenter.com/product/100-10653/pokemon-tcg-scarlet-and-violet-destined-rivals-pokemon-center-elite-trainer-box",
+    "https://www.pokemoncenter.com/product/100-10019/pokemon-tcg-scarlet-and-violet-prismatic-evolutions-pokemon-center-elite-trainer-box",
+    "https://www.pokemoncenter.com/product/10-10027-101/pokemon-tcg-scarlet-and-violet-prismatic-evolutions-super-premium-collection",
+    #test links
+    "https://www.pokemoncenter.com/product/70-10312-101/ralts-kirlia-gardevoir-and-mega-gardevoir-pokemon-pixel-pins-4-pack",
+    "https://www.mueller.de/p/pokemon-adventskalender-2021-2726315/",
+    "https://www.smythstoys.com/de/de-de/spielzeug/plueschtiere-und-kuscheltiere/kuscheltiere/pokemon-plueschtiere/pokemon-kuscheltier-glurak-30-cm/p/172049",
+    "https://www.mediamarkt.de/de/product/_the-pokemon-company-int-45935-pkm-kp07-stellarkrone-booster-sammelkarten-2951644.html"
 ]
 
 CHECK_INTERVAL = 60 * 5  # 5 Minuten
@@ -57,8 +79,8 @@ def is_product_available(url):
 
             if "smythstoys.com" in url:
                 print("[DEBUG] Suche Smyths-Button...")
-                button = driver.find_elements(By.XPATH, "//button[contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÜ', 'abcdefghijklmnopqrstuvwxyzäöü'), 'in den warenkorb')]")
-                for btn in button:
+                buttons = driver.find_elements(By.XPATH, "//button[contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÜ', 'abcdefghijklmnopqrstuvwxyzäöü'), 'in den warenkorb')]")
+                for btn in buttons:
                     if btn.is_enabled() and "cursor-not-allowed" not in btn.get_attribute("class"):
                         print("[DEBUG] Smyths verfügbar.")
                         driver.quit()
@@ -66,8 +88,8 @@ def is_product_available(url):
 
             if "pokemoncenter.com" in url:
                 print("[DEBUG] Suche PokémonCenter-Button...")
-                button = driver.find_elements(By.CLASS_NAME, "add-to-cart-button--PZmQF")
-                for btn in button:
+                buttons = driver.find_elements(By.CLASS_NAME, "add-to-cart-button--PZmQF")
+                for btn in buttons:
                     text = btn.text.strip().upper()
                     print(f"[DEBUG] Button-Text: {text}")
                     if "ADD TO CART" in text:
@@ -78,13 +100,27 @@ def is_product_available(url):
             driver.quit()
             print("[DEBUG] Kein aktiver Button gefunden.")
             return False
+
         else:
             print(f"[INFO] BeautifulSoup-Prüfung: {url}")
             headers = {"User-Agent": "Mozilla/5.0"}
-            res = requests.get(url, headers=headers)
+            res = requests.get(url, headers=headers, timeout=10)
             res.raise_for_status()
             soup = BeautifulSoup(res.text, "html.parser")
 
+            # Müller & MediaMarkt
+            if "mueller.de" in url or "mediamarkt.de" in url:
+                button = soup.find(lambda tag:
+                    (tag.name == "button" or tag.name == "a") and
+                    "in den warenkorb" in tag.get_text(strip=True).lower())
+                if button:
+                    print("[DEBUG] Müller/MediaMarkt verfügbar.")
+                    return True
+
+                unavailable = soup.find(string=lambda t: "nicht verfügbar" in t.lower() or "ausverkauft" in t.lower())
+                return not unavailable
+
+            # Generischer Fallback
             button = soup.find(lambda tag:
                 (tag.name == "button" or tag.name == "a") and
                 "in den warenkorb" in tag.get_text(strip=True).lower())
@@ -97,6 +133,7 @@ def is_product_available(url):
     except Exception as e:
         print(f"[ERROR] Fehler bei {url}: {e}")
         return False
+
 
 def check_availability():
     send_telegram_message("🔎 Produktüberwachung gestartet!")
