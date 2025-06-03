@@ -1,26 +1,29 @@
+FROM python:3.11-slim
 
-FROM python:3.10-slim
-
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
-    chromium \
-    chromium-driver \
-    fonts-liberation libappindicator3-1 libasound2 libnspr4 libnss3 libxss1 libxtst6 \
-    wget gnupg unzip curl \
-    && rm -rf /var/lib/apt/lists/*
+    wget curl gnupg unzip \
+    fonts-liberation libatk-bridge2.0-0 libatk1.0-0 libcups2 \
+    libdbus-1-3 libgdk-pixbuf2.0-0 libnspr4 libnss3 libx11-xcb1 \
+    libxcomposite1 libxdamage1 libxrandr2 xdg-utils \
+    libu2f-udev libvulkan1 libasound2 libxss1 libgbm1 && \
+    rm -rf /var/lib/apt/lists/*
 
-ENV CHROME_BIN=/usr/bin/chromium
-ENV PATH="$CHROME_BIN:$PATH"
-
-WORKDIR /app
-COPY . .
-
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Kopiere das Setup-Skript ins Image
+# Install Chrome + ChromeDriver
 COPY setup_chromedriver.sh /setup_chromedriver.sh
 RUN chmod +x /setup_chromedriver.sh && /setup_chromedriver.sh
 
-# Führe das Setup-Skript aus
-RUN /bin/bash /setup_chromedriver.sh
+# Set environment for Chrome
+ENV CHROME_BIN=/usr/bin/google-chrome
+ENV PATH=$PATH:/usr/bin
 
+# Install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy app
+COPY . /app
+WORKDIR /app
+
+# Start your app
 CMD ["python", "main.py"]
