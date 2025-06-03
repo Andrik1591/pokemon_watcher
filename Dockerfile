@@ -1,29 +1,25 @@
-FROM python:3.11-slim
+FROM python:3.10-slim
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    wget curl gnupg unzip \
-    fonts-liberation libatk-bridge2.0-0 libatk1.0-0 libcups2 \
-    libdbus-1-3 libgdk-pixbuf2.0-0 libnspr4 libnss3 libx11-xcb1 \
-    libxcomposite1 libxdamage1 libxrandr2 xdg-utils \
-    libu2f-udev libvulkan1 libasound2 libxss1 libgbm1 && \
-    rm -rf /var/lib/apt/lists/*
+# Systempakete installieren
+RUN apt-get update && apt-get install -y wget unzip curl gnupg2 chromium chromium-driver
 
-# Install Chrome + ChromeDriver
+# Google Chrome installieren
+RUN mkdir -p /opt/chrome &&     curl -sSL https://dl.google.com/linux/linux_signing_key.pub | apt-key add - &&     echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list &&     apt-get update && apt-get install -y google-chrome-stable
+
+# Chrome + ChromeDriver Pfade setzen
+ENV PATH="/opt/chromedriver-linux64:${PATH}"
+ENV CHROME_BIN="/opt/google/chrome/chrome"
+
+# Setup-Chromedriver-Skript hinzufügen
 COPY setup_chromedriver.sh /setup_chromedriver.sh
 RUN chmod +x /setup_chromedriver.sh && /setup_chromedriver.sh
 
-# Set environment for Chrome
-ENV CHROME_BIN=/usr/bin/google-chrome
-ENV PATH=$PATH:/usr/bin
-
-# Install Python dependencies
-COPY requirements.txt .
+# Python-Abhängigkeiten
+COPY requirements.txt /app/requirements.txt
+WORKDIR /app
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy app
+# App-Code hinzufügen
 COPY . /app
-WORKDIR /app
 
-# Start your app
 CMD ["python", "main.py"]
