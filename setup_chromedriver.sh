@@ -1,17 +1,27 @@
 #!/bin/bash
+set -e
 
-# Alte Chromedriver entfernen (wenn vorhanden)
-rm -f /usr/bin/chromedriver
+echo "[SETUP] Installiere Chrome & ChromeDriver..."
 
-# Chromedriver Version 137.0.7151.68 herunterladen
-wget https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/137.0.7151.68/linux64/chromedriver-linux64.zip -O /tmp/chromedriver.zip
+# Install Chrome
+apt-get update
+apt-get install -y wget unzip curl gnupg
 
-# Entpacken
-unzip /tmp/chromedriver.zip -d /tmp/
+curl -sSL https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor > /usr/share/keyrings/google-linux.gpg
+echo "deb [signed-by=/usr/share/keyrings/google-linux.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list
 
-# Verschieben nach /usr/bin und ausführbar machen
-mv /tmp/chromedriver-linux64/chromedriver /usr/bin/chromedriver
+apt-get update
+apt-get install -y google-chrome-stable
+
+# Install matching ChromeDriver
+CHROME_VERSION=$(google-chrome-stable --version | grep -oP '\d+\.\d+\.\d+' | head -1)
+CHROMEDRIVER_URL=$(curl -s "https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json" | \
+  grep -B2 "$CHROME_VERSION" | grep "linux64" | grep "url" | head -1 | cut -d'"' -f4)
+
+echo "[INFO] Lade ChromeDriver von $CHROMEDRIVER_URL ..."
+curl -Lo /tmp/chromedriver.zip "$CHROMEDRIVER_URL"
+unzip /tmp/chromedriver.zip -d /usr/local/bin/
+mv /usr/local/bin/chromedriver-linux64/chromedriver /usr/bin/chromedriver
 chmod +x /usr/bin/chromedriver
 
-# Fertig
-echo "Chromedriver 137.0.7151.68 installiert."
+echo "[SETUP] Chrome & ChromeDriver installiert."
